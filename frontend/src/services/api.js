@@ -26,7 +26,15 @@ const apiRequest = async (endpoint, options = {}) => {
       throw new Error('Session expired. Redirecting to login...');
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    let data = {};
+    if (responseText) {
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = { error: `Server returned an invalid response (HTTP ${response.status})` };
+      }
+    }
 
     if (!response.ok) {
       throw new Error(data.error || `HTTP ${response.status}`);

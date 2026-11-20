@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const app = express();
 
-const configuredOrigins = (process.env.CLIENT_URL || '')
+const configuredOrigins = (process.env.CLIENT_URL || 'https://spark-nest-tau.vercel.app')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
