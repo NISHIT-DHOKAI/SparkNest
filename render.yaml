@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sparknest-api
+    name: sparknest
     runtime: node
     rootDir: backend
     buildCommand: npm ci
