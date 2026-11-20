@@ -45,9 +45,9 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/search', searchRoutes);
 
-// Render's primary service URL should respond with a safe API landing page.
+// Send visitors opening the Render service URL to the actual SparkNest app.
 app.get('/', (req, res) => {
-  res.send('SparkNest API is running');
+  res.redirect(302, 'https://spark-nest-tau.vercel.app/');
 });
 
 app.get('/api/health', (req, res) => {
