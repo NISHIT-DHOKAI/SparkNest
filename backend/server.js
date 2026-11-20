@@ -47,12 +47,7 @@ app.use('/api/search', searchRoutes);
 
 // Render's primary service URL should respond with a safe API landing page.
 app.get('/', (req, res) => {
-  res.json({
-    name: 'SparkNest API',
-    status: 'ok',
-    health: '/api/health',
-    api: '/api'
-  });
+  res.send('SparkNest API is running');
 });
 
 app.get('/api/health', (req, res) => {
