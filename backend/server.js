@@ -45,6 +45,16 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/search', searchRoutes);
 
+// Render's primary service URL should respond with a safe API landing page.
+app.get('/', (req, res) => {
+  res.json({
+    name: 'SparkNest API',
+    status: 'ok',
+    health: '/api/health',
+    api: '/api'
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'SparkNest API is running' });
 });
