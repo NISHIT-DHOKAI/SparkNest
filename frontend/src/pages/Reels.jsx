@@ -2,14 +2,15 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { reelsAPI } from "../services/api"; // Your API service
+import { demoReels } from "../data/demoContent";
 
 const reelsStyles = `
   :root {
-    --spark-coral: #FF6B6B;
-    --spark-coral-soft: #FFE8E8;
-    --spark-ink: #1A1A2E;
-    --spark-muted: #6B7080;
-    --spark-surface: #FAFAF8;
+    --spark-coral: #D56F4D;
+    --spark-coral-soft: #F7E7DF;
+    --spark-ink: #202820;
+    --spark-muted: #777E76;
+    --spark-surface: #FAF9F6;
     --spark-white: #FFFFFF;
     --spark-border: #EBEBEB;
     --spark-radius: 18px;
@@ -18,11 +19,11 @@ const reelsStyles = `
   .reels-page {
     font-family: 'DM Sans', sans-serif;
     min-height: calc(100vh - 62px);
-    background: #0D0D14;
+    background: #faf9f6;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 36px 16px 56px;
   }
 
   .reels-layout {
@@ -362,6 +363,20 @@ const reelsStyles = `
     border-radius: 4px;
   }
 
+  .reels-page-heading { width: 100%; margin: 0 0 22px; text-align: left; }
+  .reels-page-heading p { margin: 0 0 7px; color: #B75537; font-size: 9px; font-weight: 700; letter-spacing: .16em; }
+  .reels-page-heading h1 { margin: 0; color: #202820; font-family: 'Manrope', sans-serif; font-size: 30px; font-weight: 600; letter-spacing: -.05em; }
+  .reels-page-heading span { display: block; margin-top: 6px; color: #777E76; font-size: 12px; }
+  .reel-comments-panel { background: #fff; border: 1px solid #e9e8e1; border-radius: 5px; box-shadow: 0 12px 32px #2028200a; }
+  .reel-panel-header, .reel-input-row { border-color: #eeede8; }
+  .reel-panel-title { color: #202820; font-family: 'Manrope', sans-serif; text-decoration: none; }
+  .reel-panel-sub, .reel-comment-name { color: #777E76; }
+  .reel-no-comments { color: #777E76; }
+  .reel-comment-bubble, .reel-comment-input { color: #202820; background: #f7f6f2; border-color: #e9e8e1; }
+  .reel-comment-text { color: #414941; }
+  .reel-comment-input::placeholder { color: #8b908a; }
+  .reel-dot { background: #d8d8d0; cursor: pointer; }
+
   @media (max-width: 640px) {
     .reel-comments-panel { display: none; }
     .reels-layout { justify-content: center; }
@@ -386,24 +401,30 @@ function Reels() {
 
   // Fetch reels
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setReels(demoReels);
+      setLoading(false);
+      return;
+    }
 
     const fetchReels = async () => {
       try {
         setLoading(true);
         const data = await reelsAPI.getReels({ page: 1, limit: 50 });
-        setReels(data.reels);
+        const nextReels = data.reels?.length ? data.reels : demoReels;
+        setReels(nextReels);
         
         // Check which reels current user liked
         if (currentUser) {
           const liked = {};
-          data.reels.forEach((reel, idx) => {
+          nextReels.forEach((reel, idx) => {
             liked[idx] = reel.likes.includes(currentUser._id);
           });
           setLikedReels(liked);
         }
       } catch (error) {
         console.error('Failed to fetch reels:', error);
+        setReels(demoReels);
       } finally {
         setLoading(false);
       }
@@ -447,7 +468,7 @@ function Reels() {
 
   // Like reel
   const handleLike = async () => {
-    if (!currentUser) return;
+    if (!currentUser || currentReel?.isDemo) return;
     
     try {
       await reelsAPI.likeReel(currentReel._id);
@@ -471,7 +492,7 @@ function Reels() {
   // Add comment
   const handleComment = async () => {
     const text = commentText.trim();
-    if (!text || !currentUser) return;
+    if (!text || !currentUser || currentReel?.isDemo) return;
 
     try {
       await reelsAPI.commentOnReel(currentReel._id, { text });
@@ -498,18 +519,6 @@ function Reels() {
 
   const currentComments = comments[index] || [];
 
-  if (!isAuthenticated) {
-    return (
-      <div className="reels-page">
-        <div className="reels-empty">
-          <div className="reels-empty-icon">🔒</div>
-          <p className="reels-empty-title">Log in to watch reels</p>
-          <p className="reels-empty-sub">Sign in to enjoy SparkNest reels.</p>
-        </div>
-      </div>
-    );
-  }
-
   if (loading && reels.length === 0) {
     return (
       <div className="reels-page">
@@ -525,7 +534,12 @@ function Reels() {
     <>
       <style>{reelsStyles}</style>
       <div className="reels-page">
-        <div style={{ width: "100%", maxWidth: 780 }}>
+          <div style={{ width: "100%", maxWidth: 850 }}>
+          <div className="reels-page-heading">
+            <p>SPARKNEST / WATCH</p>
+            <h1>Take a little pause.</h1>
+            <span>Short stories and everyday inspiration from the community.</span>
+          </div>
           <div className="reels-layout">
 
             {/* ── Video player ── */}
@@ -560,7 +574,7 @@ function Reels() {
 
                     {/* Bottom info */}
                     <div className="reel-info">
-                      <Link to={`/users/${currentReel.user._id}`} className="reel-author-link">
+                      <Link to={currentReel.isDemo ? "/register" : `/profile/${currentReel.user._id}`} className="reel-author-link">
                         <p className="reel-author">{currentReel.user.name}</p>
                       </Link>
                       {currentReel.title && (
@@ -573,7 +587,7 @@ function Reels() {
                       <button
                         className={`reel-action${likedReels[index] ? " liked" : ""}`}
                         onClick={handleLike}
-                        disabled={!currentUser}
+                        disabled={!currentUser || currentReel.isDemo}
                         title={currentUser ? "Like reel" : "Log in to like"}
                       >
                         <div className="reel-action-icon">
@@ -585,7 +599,7 @@ function Reels() {
                       <button 
                         className="reel-action" 
                         onClick={() => document.getElementById("reel-input")?.focus()}
-                        disabled={!currentUser}
+                        disabled={!currentUser || currentReel.isDemo}
                         title={currentUser ? "Comment" : "Log in to comment"}
                       >
                         <div className="reel-action-icon">💬</div>
@@ -595,7 +609,7 @@ function Reels() {
                       </button>
 
                       <Link 
-                        to={`/reels/${currentReel._id}`} 
+                        to={currentReel.isDemo ? "/register" : `/reels/${currentReel._id}`}
                         className="reel-action"
                       >
                         <div className="reel-action-icon">↗</div>
@@ -650,7 +664,7 @@ function Reels() {
             {/* ── Comments panel ── */}
             {currentReel && <div className="reel-comments-panel">
               <div className="reel-panel-header">
-                <Link to={`/reels/${currentReel?._id}`} className="reel-panel-title">
+                <Link to={currentReel.isDemo ? "/register" : `/reels/${currentReel?._id}`} className="reel-panel-title">
                   {currentReel?.title || `Reel ${index + 1}`}
                 </Link>
                 <p className="reel-panel-sub">

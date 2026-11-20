@@ -17,6 +17,7 @@ import CreateBoard from "../pages/CreateBoard";
 import Chat from "../pages/Chat";
 import Search from "../pages/Searchs";
 import Reels from "../pages/Reels";
+import ReelDetails from "../pages/ReelDetails";
 import AdminLayout from "../admin/components/AdminLayout";
 import AdminDashboard from "../admin/pages/Dashboard";
 import AdminUsers from "../admin/pages/Users";
@@ -46,11 +47,7 @@ function Layout() {
         <Route path="/register" element={<Register />} />
         <Route
           path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
+          element={<Home />}
         />
         <Route
           path="/boards"
@@ -120,12 +117,9 @@ function Layout() {
         />
         <Route
           path="/reels"
-          element={
-            <ProtectedRoute>
-              <Reels />
-            </ProtectedRoute>
-          }
+          element={<Reels />}
         />
+        <Route path="/reels/:id" element={<ReelDetails />} />
         <Route
           path="/create"
           element={
